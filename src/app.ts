@@ -2,20 +2,28 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import { Server } from 'http';
-import router from './router';
-import { LoggerService } from './services/logger.service';
+import router from './routes';
+import helmet from 'koa-helmet';
+import { RedisService } from './clients/redis';
+import { ArangoDBService } from './clients/arango';
+import { LoggerService } from './helpers';
 
 class App extends Koa {
   public servers: Server[];
-
   constructor() {
     super();
 
     // bodyparser needs to be loaded first in order to work
     this.servers = [];
+    this._configureRoutes();
+    this._configureClients();
+  }
+
+  async _configureRoutes(): Promise<void> {
     this.use(bodyParser());
-    this.configureRoutes();
-    this.configureMiddlewares();
+    this.use(router.routes());
+    this.use(router.allowedMethods());
+    this.use(helmet());
   }
 
   configureMiddlewares(): void {
@@ -37,10 +45,24 @@ class App extends Koa {
     });
   }
 
-  configureRoutes(): void {
-    // Bootstrap application router
-    this.use(router.routes());
-    this.use(router.allowedMethods());
+  async _configureClients(): Promise<void> {
+    const arangodb = new ArangoDBService();
+
+    if (arangodb) {
+      this.use(async (ctx, next) => {
+        ctx.state.arangodb = arangodb;
+        return next();
+      });
+    }
+
+    const redisClient = new RedisService();
+
+    if (redisClient) {
+      this.use((ctx, next) => {
+        ctx.state.redisClient = redisClient;
+        return next();
+      });
+    }
   }
 
   listen(...args: any[]): Server {
