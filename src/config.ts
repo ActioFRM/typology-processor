@@ -48,7 +48,7 @@ export interface IConfig {
   };
 }
 
-export const configuration: Partial<IConfig> = {
+export const configuration: IConfig = {
   apm: {
     serviceName: <string>process.env.APM_SERVICE_NAME,
     url: <string>process.env.APM_URL,

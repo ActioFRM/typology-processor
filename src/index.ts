@@ -1,8 +1,9 @@
-import { configuration } from './config';
 import App from './app';
-import { LoggerService } from './helpers';
-import apm from 'elastic-apm-node';
 import { Context } from 'koa';
+import { configuration } from './config';
+import apm from 'elastic-apm-node';
+import { LoggerService } from './logger.service';
+import NodeCache from 'node-cache';
 
 /*
  * Initialize the APM Logging
@@ -18,6 +19,8 @@ if (configuration.env === 'production') {
 }
 
 export const app = new App();
+
+export const cache = new NodeCache();
 
 /*
  * Centralized error handling

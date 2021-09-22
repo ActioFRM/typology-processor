@@ -1,5 +1,5 @@
 import log4js from 'log4js';
-import { configuration } from '../config';
+import { configuration } from './config';
 
 if (configuration.env !== 'development' && configuration.env !== 'test') {
   log4js.configure({

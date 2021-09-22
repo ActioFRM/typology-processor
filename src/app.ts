@@ -2,11 +2,11 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import { Server } from 'http';
-import router from './routes';
+import router from './router';
 import helmet from 'koa-helmet';
 import { RedisService } from './clients/redis';
 import { ArangoDBService } from './clients/arango';
-import { LoggerService } from './helpers';
+import { LoggerService } from './logger.service';
 
 class App extends Koa {
   public servers: Server[];
