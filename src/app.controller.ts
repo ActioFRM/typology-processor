@@ -1,23 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { CustomerCreditTransferInitiation } from './classes/iPain001Transaction';
 import { NetworkMap } from './classes/network-map';
 import { RuleResult } from './classes/rule-result';
 import { LoggerService } from './logger.service';
 import { handleTransaction } from './app.service';
-import { Context } from 'koa';
+import { Context, Next } from 'koa';
+import apm from 'elastic-apm-node';
+import { configuration } from './config';
 
-export const handleExecute = async (ctx: Context): Promise<string> => {
+export const handleExecute = async (ctx: Context, next: Next): Promise<Context | undefined> => {
   LoggerService.log('Start - Handle execute request');
+  apm.startTransaction(configuration.functionName, 'handleExecute');
+  const span = apm.startSpan('Handle execute request');
+
   const request = ctx.request.body;
 
   let networkMap: NetworkMap = new NetworkMap();
   let ruleResult: RuleResult = new RuleResult();
-  let req: CustomerCreditTransferInitiation = new CustomerCreditTransferInitiation({});
+  let transaction: CustomerCreditTransferInitiation = new CustomerCreditTransferInitiation({});
 
   try {
     networkMap = request.networkMap;
     ruleResult = request.ruleResult;
-    req = request.transaction;
+    transaction = request.transaction;
   } catch (parseError) {
     const failMessage = 'Failed to parse execution request';
 
@@ -26,12 +30,17 @@ export const handleExecute = async (ctx: Context): Promise<string> => {
   }
 
   try {
-    await handleTransaction(req, networkMap, ruleResult, ctx);
+    const result = await handleTransaction(transaction, networkMap, ruleResult, ctx);
 
-    ctx.status = 200;
+    // The request has been received but not yet acted upon.
+    ctx.status = 202;
     ctx.body = {
-      message: 'Successfully executed transaction',
+      message: result,
     };
+
+    await next();
+    span?.end();
+    return ctx;
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
     LoggerService.error(failMessage, err as Error, 'ApplicationService');

@@ -4,7 +4,7 @@ import { handleHealthCheck } from './health.controller';
 
 const router = new Router();
 
-// health checks
+router.get('/', handleHealthCheck);
 router.get('/health', handleHealthCheck);
 router.get('/execute', handleExecute);
 
