@@ -3,9 +3,8 @@ import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 import { cache } from '..';
 import { ITypologyExpression } from '../interfaces/iTypologyExpression';
-import apm from 'elastic-apm-node';
 
-class ArangoDBService {
+export class ArangoDBService {
   client: Database;
 
   constructor() {
@@ -63,5 +62,3 @@ class ArangoDBService {
     }
   }
 }
-
-export const arangoDBService = new ArangoDBService();

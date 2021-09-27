@@ -48,26 +48,6 @@ ENV exec_timeout="10s"
 ENV write_timeout="15s"
 ENV read_timeout="15s"
 
-ENV REST_PORT=3000
-ENV GRPC_PORT=50051
-ENV FUNCTION_NAME=typology-processor
-ENV RULE_ENDPOINT=http://gateway.frm:8080/function/
-ENV APM_LOGGING=true
-ENV APM_URL=http://apm-server-apm-server.frm:8200
-ENV APM_SECRET_TOKEN=
-ENV NODE_ENV=prod
-ENV LOGSTASH_HOST=my-release-logstash.frm-meshed
-ENV LOGSTASH_PORT=8080
-ENV DB_URL=http://arangodb.frm:8529
-ENV DB_NAME=configuration
-ENV DB_USER=root
-ENV DB_PASSWORD=123456
-ENV REDIS_HOST=my-redis-master.frm
-ENV REDIS_PORT=6379
-ENV REDIS_DB=0
-ENV REDIS_AUTH=TjEmUWes67
-ENV CADP_ENDPOINT=http://gateway.frm:8080/function/off-frm-channel-aggregation-decisioning-processor.frm-meshed/execute
-
 ENV prefix_logs="false"
 
 HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1

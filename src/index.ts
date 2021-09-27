@@ -4,6 +4,7 @@ import { configuration } from './config';
 import apm from 'elastic-apm-node';
 import { LoggerService } from './logger.service';
 import NodeCache from 'node-cache';
+import { ArangoDBService, RedisService } from './clients';
 
 /*
  * Initialize the APM Logging
@@ -21,6 +22,8 @@ if (configuration.env === 'production') {
 export const app = new App();
 
 export const cache = new NodeCache();
+export const databaseClient = new ArangoDBService();
+export const cacheClient = new RedisService();
 
 /*
  * Centralized error handling

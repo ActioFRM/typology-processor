@@ -7,12 +7,9 @@ import { NetworkMap, Typology } from './classes/network-map';
 import { RuleResult } from './classes/rule-result';
 import { IExpression, IRuleValue, ITypologyExpression } from './interfaces/iTypologyExpression';
 import { TypologyResult } from './classes/typology-result';
-
 import apm from 'elastic-apm-node';
-import { Context } from 'koa';
-
-import { arangoDBService, redisService } from './clients';
 import { configuration } from './config';
+import { cacheClient, databaseClient } from '.';
 
 const evaluateTypologyExpression = (ruleValues: IRuleValue[], ruleResults: RuleResult[], typologyExpression: IExpression): number => {
   let toReturn = 0.0;
@@ -71,7 +68,7 @@ const executeRequest = async (
   try {
     const transactionID = request.PaymentInformation.CreditTransferTransactionInformation.PaymentIdentification.EndToEndIdentification;
     const cacheKey = `${transactionID}_${typology.typology_id}`;
-    const jruleResults = await redisService.getJson(cacheKey);
+    const jruleResults = await cacheClient.getJson(cacheKey);
     const ruleResults: RuleResult[] = [];
 
     // Get cache from Redis if we have
@@ -93,7 +90,7 @@ const executeRequest = async (
     }
     // else means we have all results for Typology, so lets evaluate result
 
-    const expressionRes = await arangoDBService.getTypologyExpression(typology.typology_id);
+    const expressionRes = await databaseClient.getTypologyExpression(typology.typology_id);
     if (!expressionRes) return 0.0;
 
     const expression: ITypologyExpression = expressionRes!;
@@ -116,14 +113,14 @@ const executeRequest = async (
       span?.end();
     } catch (error) {
       span?.end();
-      LoggerService.error('Error while sending Typology result to CADP', error);
+      LoggerService.error('Error while sending Typology result to CADP', error as Error);
     }
     span = apm.startSpan(`[${transactionID}] Delete Typology interim cache key`, { childOf: apmTran == null ? undefined : apmTran });
     redisService.deleteKey(cacheKey);
     span?.end();
     return typologyResultValue;
   } catch (error) {
-    LoggerService.error(`Failed to process Typology ${typology.typology_id} request`, error, 'executeRequest');
+    LoggerService.error(`Failed to process Typology ${typology.typology_id} request`, error as Error, 'executeRequest');
     return 0.0;
   } finally {
     apmTran?.end();
@@ -142,7 +139,7 @@ export const handleTransaction = async (
       // will loop through every Typology here
       typologyCounter++;
       // for (const rule of typology.rules) {
-      //   // determine rule completion
+      // determine rule completion
       // }
       const typoRes = await executeRequest(transaction, typology, ruleResult, networkMap);
       toReturn.push(`{"Typology": ${typology.typology_id}}, "Result":${typoRes}}`);
@@ -159,7 +156,7 @@ export const handleTransaction = async (
 };
 
 // Submit the score to the CADP
-// It needs to be rewritten with Axios library instead of 'http'
+// TODO: It needs to be rewritten with Axios library instead of 'http'
 const executePost = (endpoint: string, request: string): Promise<void | Error> => {
   return new Promise((resolve) => {
     const options: http.RequestOptions = {

@@ -30,6 +30,7 @@ export interface IConfig {
     user: string;
     graphName: string;
   };
+  cadpEndpoint: string;
   logstash: {
     host: string;
     port: number;
@@ -56,6 +57,7 @@ export const configuration: IConfig = {
     active: <string>process.env.APM_ACTIVE,
   },
   collectionName: <string>process.env.COLLECTION_NAME,
+  cadpEndpoint: <string>process.env.CADP_ENDPOINT,
   db: {
     name: <string>process.env.DATABASE_NAME,
     password: <string>process.env.DATABASE_PASSWORD,

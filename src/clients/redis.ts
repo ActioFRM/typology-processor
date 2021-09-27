@@ -2,7 +2,7 @@ import redis from 'redis';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 
-class RedisService {
+export class RedisService {
   client: redis.RedisClient;
 
   constructor() {
@@ -48,5 +48,3 @@ class RedisService {
     });
   }
 }
-
-export const redisService = new RedisService();

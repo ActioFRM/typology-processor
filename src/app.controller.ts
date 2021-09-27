@@ -30,7 +30,7 @@ export const handleExecute = async (ctx: Context, next: Next): Promise<Context |
   }
 
   try {
-    const result = await handleTransaction(transaction, networkMap, ruleResult, ctx);
+    const result = await handleTransaction(transaction, networkMap, ruleResult);
 
     // The request has been received but not yet acted upon.
     ctx.status = 202;
