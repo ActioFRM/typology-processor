@@ -70,7 +70,6 @@ ENV GRAPH_NAME=exampleGraph
 
 ENV APM_ACTIVE=true
 ENV APM_SERVICE_NAME=typology-processor
-ENV # APM_URL=127.0.0.1:4857
 ENV APM_URL=http://apm:8200
 ENV APM_SECRET_TOKEN=""
 
