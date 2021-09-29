@@ -84,7 +84,7 @@ const executeRequest = async (
         childOf: apmTran == null ? undefined : apmTran,
       });
       // Save Typology interim rule results to Cache
-      redisService.setJson(cacheKey, JSON.stringify(ruleResults));
+      await cacheClient.setJson(cacheKey, JSON.stringify(ruleResults));
       span?.end();
       return 0.0;
     }
@@ -116,7 +116,7 @@ const executeRequest = async (
       LoggerService.error('Error while sending Typology result to CADP', error as Error);
     }
     span = apm.startSpan(`[${transactionID}] Delete Typology interim cache key`, { childOf: apmTran == null ? undefined : apmTran });
-    redisService.deleteKey(cacheKey);
+    await cacheClient.deleteKey(cacheKey);
     span?.end();
     return typologyResultValue;
   } catch (error) {

@@ -7,10 +7,10 @@ export class RedisService {
 
   constructor() {
     this.client = redis.createClient({
-      db: configuration.redis.db,
-      host: configuration.redis.host,
-      port: configuration.redis.port,
-      auth_pass: configuration.redis.auth,
+      db: configuration.redis?.db,
+      host: configuration.redis?.host,
+      port: configuration.redis?.port,
+      auth_pass: configuration.redis?.auth,
     });
 
     if (this.client.connected) {
@@ -21,30 +21,39 @@ export class RedisService {
     }
   }
 
-  getJson(key: string): void {
-    this.client.get(key, (err, reply) => {
-      if (err) {
-        LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
-      }
-      return reply;
-    });
-  }
+  getJson = (key: string): Promise<string> =>
+    new Promise((resolve) => {
+      this.client.get(key, (err, res) => {
+        if (err) {
+          LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
 
-  setJson(key: string, value: string): void {
-    this.client.set(key, value, (err, reply) => {
-      if (err) {
-        LoggerService.error('Error while setting key to redis with message:', err, 'RedisService');
-      }
-      return reply;
+          resolve('');
+        }
+        resolve(res ?? '');
+      });
     });
-  }
 
-  deleteKey(key: string): void {
-    this.client.del(key, (err, reply) => {
-      if (err) {
-        LoggerService.error('Error while deleting key from redis with message:', err, 'RedisService');
-      }
-      return reply;
+  setJson = (key: string, value: string): Promise<string> =>
+    new Promise((resolve) => {
+      this.client.SET(key, value, (err, res) => {
+        if (err) {
+          LoggerService.error('Error while setting key to redis with message:', err, 'RedisService');
+
+          resolve('');
+        }
+        resolve(res);
+      });
     });
-  }
+
+  deleteKey = (key: string): Promise<number> =>
+    new Promise((resolve) => {
+      this.client.DEL(key, (err, res) => {
+        if (err) {
+          LoggerService.error('Error while deleting key from redis with message:', err, 'RedisService');
+
+          resolve(0);
+        }
+        resolve(res);
+      });
+    });
 }
