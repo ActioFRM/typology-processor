@@ -9,7 +9,6 @@ export class ArangoDBService {
   client: Database;
 
   constructor() {
-    console.log(configuration.db);
     this.client = new Database({
       url: configuration.db.url,
       databaseName: configuration.db.name,
@@ -54,17 +53,14 @@ export class ArangoDBService {
     try {
       const cycles = await this.client.query(typologyExpressionQuery);
       const results = await cycles.batches.all();
-      if (results.length === 0)
-        return;
+      if (results.length === 0) return;
       const typologyExpression: ITypologyExpression = results[0][0];
       cache.set(typologyId, results[0][0]);
       return typologyExpression;
     } catch (error) {
       LoggerService.error('Error while executing ArangoDB query with message:', error as Error, 'ArangoDBService');
-    }
-    finally {
-      if (span)
-        span.end();
+    } finally {
+      if (span) span.end();
     }
   }
 }
