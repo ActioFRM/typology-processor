@@ -3,11 +3,13 @@ import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 import { cache } from '..';
 import { ITypologyExpression } from '../interfaces/iTypologyExpression';
+import apm from 'elastic-apm-node';
 
 export class ArangoDBService {
   client: Database;
 
   constructor() {
+    console.log(configuration.db);
     this.client = new Database({
       url: configuration.db.url,
       databaseName: configuration.db.name,
@@ -44,21 +46,25 @@ export class ArangoDBService {
     if (cacheVal) return cacheVal as ITypologyExpression;
     const span = apm.startSpan('Fetch Typology Expression from Database');
     const typologyExpressionQuery = `
-        FOR doc IN typologyExpression
-        FILTER doc._key == "${typologyId}"
+        FOR doc IN ${configuration.db.collectionName}
+        FILTER doc.typology_id == "${typologyId}"
         RETURN doc
         `;
 
     try {
       const cycles = await this.client.query(typologyExpressionQuery);
       const results = await cycles.batches.all();
+      if (results.length === 0)
+        return;
       const typologyExpression: ITypologyExpression = results[0][0];
-      span?.end();
       cache.set(typologyId, results[0][0]);
       return typologyExpression;
     } catch (error) {
-      span?.end();
       LoggerService.error('Error while executing ArangoDB query with message:', error as Error, 'ArangoDBService');
+    }
+    finally {
+      if (span)
+        span.end();
     }
   }
 }

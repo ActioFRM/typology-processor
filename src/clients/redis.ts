@@ -6,19 +6,19 @@ export class RedisService {
   client: redis.RedisClient;
 
   constructor() {
+    console.log(configuration.redis);
     this.client = redis.createClient({
       db: configuration.redis?.db,
       host: configuration.redis?.host,
       port: configuration.redis?.port,
       auth_pass: configuration.redis?.auth,
     });
-
-    if (this.client.connected) {
+    this.client.on('connect', () => {
       LoggerService.log('✅ Redis connection is ready');
-    } else {
-      LoggerService.error('❌ Redis connection is not ready');
-      throw new Error('Redis connection error');
-    }
+    });
+    this.client.on('error', (error) => {
+      LoggerService.error('❌ Redis connection is not ready', error);
+    });
   }
 
   getJson = (key: string): Promise<string> =>
